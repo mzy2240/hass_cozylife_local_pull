@@ -3,12 +3,13 @@ import json
 import time
 import requests
 import logging
+import traceback
 from .const import (
     API_DOMAIN,
     LANG
 )
 _LOGGER = logging.getLogger(__name__)
-
+CACHE_FILE = "cozy_cache_pid.json"
 
 def get_sn() -> str:
     """
@@ -31,6 +32,15 @@ def get_pid_list(lang='en') -> list:
     global _CACHE_PID
     if len(_CACHE_PID) != 0:
         return _CACHE_PID
+    
+    try:
+        with open(CACHE_FILE, "r") as f:
+            _CACHE_PID = json.loads(f.read())
+        _LOGGER.info("used %s", CACHE_FILE)
+        return _CACHE_PID
+    except:
+        _LOGGER.info("could not use %s", CACHE_FILE)
+        traceback.print_exc()
     
     if lang not in ['zh', 'en', 'es', 'pt', 'ja', 'ru', 'pt', 'nl', 'ko', 'fr', 'de',]:
         _LOGGER.info(f'not support lang={lang}, will set lang={LANG}')
@@ -61,5 +71,9 @@ def get_pid_list(lang='en') -> list:
     if pid_list['info'].get('list') is None or type(pid_list['info']['list']) is not list:
         return []
     
-    _CACHE_PID = pid_list['info']['list']    
+    _CACHE_PID = pid_list['info']['list']
+    with open(CACHE_FILE, "w") as f:
+        f.write(json.dumps(_CACHE_PID, indent=2))
+    _LOGGER.info("saved %s", CACHE_FILE)
+    
     return _CACHE_PID

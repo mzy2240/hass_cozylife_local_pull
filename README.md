@@ -18,6 +18,7 @@ maintained by the CozyLife Team.
 * configuration.yaml
 ```
 hass_cozylife_local_pull:
+   discover: true
    lang: en
    ip:
      - "192.168.1.99"

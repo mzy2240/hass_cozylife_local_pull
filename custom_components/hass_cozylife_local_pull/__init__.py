@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.typing import ConfigType
+from homeassistant.helpers.discovery import load_platform
 import logging
 import time
 from .const import (
@@ -24,7 +25,13 @@ def setup(hass: HomeAssistant, config: ConfigType) -> bool:
     config:{'lang': 'zh', 'ip': ['192.168.5.201', '192.168.5.202', '192.168.5.1']}
 }
     """
-    ip = get_ip()
+    ip = []
+    if config[DOMAIN].get('discover', True):
+        _LOGGER.info('discover devices')
+        ip += get_ip()
+    else:
+        _LOGGER.info('do not discover devices')
+    
     ip_from_config = config[DOMAIN].get('ip') if config[DOMAIN].get('ip') is not None else []    
     ip += ip_from_config
     ip_list = []
@@ -49,7 +56,7 @@ def setup(hass: HomeAssistant, config: ConfigType) -> bool:
     time.sleep(3)
     # _LOGGER.info('setup', hass, config)
     # hass.helpers.discovery.load_platform('sensor', DOMAIN, {}, config)
-    hass.helpers.discovery.load_platform('light', DOMAIN, {}, config)
-    hass.helpers.discovery.load_platform('switch', DOMAIN, {}, config)
+    load_platform(hass,'light', DOMAIN, {}, config)
+    load_platform(hass,'switch', DOMAIN, {}, config)
     
     return True
